@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Plus, Sun, Moon, Home, AudioWaveform, Briefcase, Clock, Calendar, Bell, Zap, Thermometer, Wifi } from 'lucide-react';
 import { Button } from './ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from './ui/card';
@@ -12,6 +12,7 @@ import { useDevices } from '../contexts/DeviceContext';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { defaultRoutines } from '../lib/storage';
 
 const routineSchema = z.object({
   name: z.string().min(2, 'El nombre debe tener al menos 2 caracteres'),
@@ -30,6 +31,14 @@ export default function Routines() {
   const { devices } = useDevices();
   const [showAddRoutine, setShowAddRoutine] = useState(false);
   const [editingRoutine, setEditingRoutine] = useState<number | null>(null);
+
+  useEffect(() => {
+    // Ensure default routines are loaded
+    if (routines.length === 0) {
+      const profileDefaults = defaultRoutines[selectedProfile as keyof typeof defaultRoutines] || [];
+      profileDefaults.forEach(routine => addRoutine(routine));
+    }
+  }, [selectedProfile]);
 
   const { register, handleSubmit, formState: { errors }, reset, setValue } = useForm<RoutineForm>({
     resolver: zodResolver(routineSchema),
@@ -72,7 +81,9 @@ export default function Routines() {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-foreground">Rutinas Automatizadas - {selectedProfile}</h2>
+        <h2 className="text-2xl font-bold text-foreground">
+          Rutinas Automatizadas - {selectedProfile.charAt(0).toUpperCase() + selectedProfile.slice(1)}
+        </h2>
         <Dialog open={showAddRoutine} onOpenChange={setShowAddRoutine}>
           <DialogTrigger asChild>
             <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">

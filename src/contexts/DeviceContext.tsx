@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Device } from '../types/device';
-import { getStoredDevices, storeDevices } from '../lib/storage';
+import { getStoredDevices, storeDevices, defaultDevices } from '../lib/storage';
 import toast from 'react-hot-toast';
 
 interface DeviceContextType {
@@ -19,7 +19,14 @@ export function DeviceProvider({ children, selectedProfile }: { children: React.
 
   useEffect(() => {
     const storedDevices = getStoredDevices(selectedProfile);
-    setDevices(storedDevices);
+    if (storedDevices.length === 0) {
+      // Load default devices if none exist
+      const profileDefaults = defaultDevices[selectedProfile as keyof typeof defaultDevices] || [];
+      setDevices(profileDefaults);
+      storeDevices(selectedProfile, profileDefaults);
+    } else {
+      setDevices(storedDevices);
+    }
   }, [selectedProfile]);
 
   useEffect(() => {
