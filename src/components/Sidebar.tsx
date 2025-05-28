@@ -2,28 +2,17 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Home, Calendar, BarChart2, Wifi, Settings } from 'lucide-react';
 import { cn } from '../lib/utils';
+import { useDevices } from '../contexts/DeviceContext';
 
 interface SidebarProps {
   activeTab: string;
   setActiveTab: (tab: string) => void;
+  selectedProfile: string;
 }
 
-const connectedDevices = {
-  casa: [
-    { id: 1, name: "Lámpara sala", type: "light", status: "online" },
-    { id: 2, name: "Termostato", type: "climate", status: "online" },
-    { id: 3, name: "Cámara entrada", type: "security", status: "offline" },
-    { id: 4, name: "Smart TV", type: "entertainment", status: "online" },
-  ],
-  oficina: [
-    { id: 1, name: "Luces oficina", type: "light", status: "online" },
-    { id: 2, name: "AC Central", type: "climate", status: "online" },
-    { id: 3, name: "Sensor movimiento", type: "security", status: "online" },
-  ],
-};
-
-export default function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
+export default function Sidebar({ activeTab, setActiveTab, selectedProfile }: SidebarProps) {
   const navigate = useNavigate();
+  const { devices } = useDevices();
 
   const tabs = [
     { id: "panel", name: "Panel de Control", icon: Home, path: "/dashboard" },
@@ -63,7 +52,7 @@ export default function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
           <h3 className="font-medium text-foreground">Dispositivos Conectados</h3>
         </div>
         <div className="space-y-2">
-          {connectedDevices.casa.map((device) => (
+          {devices.map((device) => (
             <div
               key={device.id}
               className="flex items-center justify-between p-2 rounded-lg hover:bg-accent hover:text-accent-foreground transition-colors"
