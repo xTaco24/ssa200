@@ -12,36 +12,35 @@ export const defaultDevices = {
   casa: [
     { 
       id: 1, 
-      name: "Sistema de Iluminación", 
-      type: "light", 
-      status: "online", 
-      brand: "Philips Hue", 
-      location: "General",
-      data: {
-        brightness: 80,
-        power: 15
-      }
-    },
-    { 
-      id: 2, 
-      name: "Termostato", 
+      name: "Termostato sala", 
       type: "climate", 
       status: "online", 
       brand: "Nest", 
-      location: "General",
+      location: "Sala",
       data: {
         temperature: 22
       }
     },
     { 
+      id: 2, 
+      name: "Lámpara cocina", 
+      type: "light", 
+      status: "offline", 
+      brand: "Philips Hue", 
+      location: "Cocina",
+      data: {
+        brightness: 0
+      }
+    },
+    { 
       id: 3, 
-      name: "Sistema de Seguridad", 
+      name: "Sensor movimiento entrada", 
       type: "security", 
       status: "online", 
       brand: "Ring", 
-      location: "General",
+      location: "Entrada",
       data: {
-        battery: 95
+        battery: 100
       }
     }
   ],
@@ -70,13 +69,13 @@ export const defaultDevices = {
     },
     { 
       id: 3, 
-      name: "Proyector Sala Principal", 
-      type: "entertainment", 
+      name: "Iluminación General", 
+      type: "light", 
       status: "online", 
-      brand: "Epson", 
-      location: "Sala de Reuniones",
+      brand: "Philips", 
+      location: "General",
       data: {
-        power: 200
+        brightness: 80
       }
     }
   ]
@@ -86,50 +85,47 @@ export const defaultRoutines = {
   casa: [
     {
       id: 1,
-      name: "Buenos días",
-      description: "Rutina matutina para comenzar el día",
-      active: true,
-      icon: Sun,
-      schedule: "07:00",
-      priority: "alta",
-      devices: ["Sistema de Iluminación", "Termostato", "Sistema de Seguridad"],
-      conditions: ["Hora: 7:00 AM", "Día laborable"],
-      actions: [
-        "Encender luces gradualmente",
-        "Ajustar temperatura a 22°C",
-        "Desactivar sistema de alarma"
-      ]
-    },
-    {
-      id: 2,
-      name: "Modo nocturno",
-      description: "Preparar la casa para la noche",
+      name: "Modo Noche",
+      description: "Configuración nocturna automática",
       active: true,
       icon: Moon,
       schedule: "23:00",
       priority: "alta",
-      devices: ["Sistema de Iluminación", "Termostato", "Sistema de Seguridad"],
-      conditions: ["Hora: 11:00 PM"],
+      devices: ["Lámpara cocina", "Termostato sala"],
+      conditions: ["Hora: 23:00"],
       actions: [
-        "Atenuar luces al 30%",
-        "Activar sistema de seguridad",
+        "Apagar todas las luces",
         "Ajustar temperatura a 20°C"
       ]
     },
     {
+      id: 2,
+      name: "Despertar",
+      description: "Rutina matutina automática",
+      active: true,
+      icon: Sun,
+      schedule: "07:00",
+      priority: "alta",
+      devices: ["Lámpara cocina", "Termostato sala"],
+      conditions: ["Hora: 7:00 AM"],
+      actions: [
+        "Encender luces al 70%",
+        "Ajustar temperatura a 22°C"
+      ]
+    },
+    {
       id: 3,
-      name: "Modo ausente",
-      description: "Activar modo de ahorro y seguridad",
+      name: "Seguridad",
+      description: "Activación de seguridad en ausencia",
       active: true,
       icon: Home,
       schedule: "manual",
       priority: "alta",
-      devices: ["Sistema de Iluminación", "Termostato", "Sistema de Seguridad"],
-      conditions: ["Activación manual", "Sensor de movimiento: sin actividad"],
+      devices: ["Sensor movimiento entrada"],
+      conditions: ["Modo ausente activado"],
       actions: [
-        "Apagar todas las luces",
-        "Activar cámaras y sensores",
-        "Activar modo ahorro de energía"
+        "Activar sensores de movimiento",
+        "Activar notificaciones"
       ]
     }
   ],
@@ -137,49 +133,46 @@ export const defaultRoutines = {
     {
       id: 1,
       name: "Inicio laboral",
-      description: "Preparar la oficina para el día laboral",
+      description: "Configuración de inicio de jornada",
       active: true,
       icon: Power,
       schedule: "08:00",
       priority: "alta",
-      devices: ["Control de Acceso", "AC Central", "Proyector Sala Principal"],
+      devices: ["AC Central", "Iluminación General"],
       conditions: ["Hora: 8:00 AM", "Día laborable"],
       actions: [
-        "Desbloquear puertas principales",
-        "Encender luces oficinas",
+        "Encender iluminación al 100%",
         "Ajustar temperatura a 23°C"
       ]
     },
     {
       id: 2,
-      name: "Sala de reuniones",
-      description: "Configurar sala para reuniones",
+      name: "Cierre oficina",
+      description: "Configuración de cierre",
       active: true,
-      icon: Calendar,
-      schedule: "manual",
-      priority: "media",
-      devices: ["AC Central", "Proyector Sala Principal"],
-      conditions: ["Reserva de sala confirmada"],
+      icon: Clock,
+      schedule: "19:00",
+      priority: "alta",
+      devices: ["AC Central", "Iluminación General", "Control de Acceso"],
+      conditions: ["Hora: 7:00 PM", "Día laborable"],
       actions: [
-        "Encender proyector",
-        "Ajustar iluminación al 70%",
-        "Ajustar temperatura sala"
+        "Apagar sistemas",
+        "Activar seguridad"
       ]
     },
     {
       id: 3,
-      name: "Cierre",
-      description: "Cerrar la oficina de forma segura",
+      name: "Modo reunión",
+      description: "Configuración para reuniones",
       active: true,
-      icon: Clock,
-      schedule: "18:00",
-      priority: "alta",
-      devices: ["Control de Acceso", "AC Central", "Proyector Sala Principal"],
-      conditions: ["Hora: 6:00 PM", "Día laborable"],
+      icon: Calendar,
+      schedule: "manual",
+      priority: "media",
+      devices: ["AC Central", "Iluminación General"],
+      conditions: ["Sala reservada"],
       actions: [
-        "Apagar todos los sistemas",
-        "Activar sistema de alarmas",
-        "Bloquear accesos"
+        "Ajustar iluminación al 80%",
+        "Optimizar temperatura"
       ]
     }
   ]
