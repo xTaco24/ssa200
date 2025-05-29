@@ -4,11 +4,13 @@ import { AuthProvider } from './contexts/AuthContext';
 import { DeviceProvider } from './contexts/DeviceContext';
 import { RoutineProvider } from './contexts/RoutineContext';
 import ProtectedRoute from './components/ProtectedRoute';
+import ErrorBoundary from './components/ErrorBoundary';
+import LoadingSpinner from './components/LoadingSpinner';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import ForgotPassword from './pages/ForgotPassword';
 import Dashboard from './components/Dashboard';
-import { useState, useEffect } from 'react';
+import { Suspense, useState, useEffect } from 'react';
 import { getStoredProfile } from './lib/storage';
 
 function App() {
@@ -28,24 +30,28 @@ function App() {
           <RoutineProvider selectedProfile={selectedProfile}>
             <div className="bg-gray-50">
               <Toaster position="top-right" />
-              <Routes>
-                <Route path="/login" element={<Login />} />
-                <Route path="/register" element={<Register />} />
-                <Route path="/forgot-password" element={<ForgotPassword />} />
-                <Route
-                  path="/dashboard/*"
-                  element={
-                    <ProtectedRoute>
-                      <Dashboard 
-                        selectedProfile={selectedProfile}
-                        setSelectedProfile={setSelectedProfile}
-                      />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route path="/" element={<Navigate to="/dashboard\" replace />} />
-                <Route path="*" element={<Navigate to="/dashboard\" replace />} />
-              </Routes>
+              <Suspense fallback={<LoadingSpinner />}>
+                <Routes>
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/register" element={<Register />} />
+                  <Route path="/forgot-password" element={<ForgotPassword />} />
+                  <Route
+                    path="/dashboard/*"
+                    element={
+                      <ProtectedRoute>
+                        <ErrorBoundary>
+                          <Dashboard 
+                            selectedProfile={selectedProfile}
+                            setSelectedProfile={setSelectedProfile}
+                          />
+                        </ErrorBoundary>
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                  <Route path="*" element={<Navigate to="/dashboard" replace />} />
+                </Routes>
+              </Suspense>
             </div>
           </RoutineProvider>
         </DeviceProvider>

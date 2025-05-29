@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import LoadingSpinner from './LoadingSpinner';
 import toast from 'react-hot-toast';
 
 export default function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -24,11 +25,7 @@ export default function ProtectedRoute({ children }: { children: React.ReactNode
   }, [checkAuth]);
 
   if (loading || isVerifying) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
-    );
+    return <LoadingSpinner />;
   }
 
   if (!user) {
