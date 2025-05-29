@@ -8,17 +8,24 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import ForgotPassword from './pages/ForgotPassword';
 import Dashboard from './components/Dashboard';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { getStoredProfile } from './lib/storage';
 
 function App() {
   const [selectedProfile, setSelectedProfile] = useState(getStoredProfile());
 
+  useEffect(() => {
+    const profile = getStoredProfile();
+    if (profile) {
+      setSelectedProfile(profile);
+    }
+  }, []);
+
   return (
-    <AuthProvider>
-      <DeviceProvider selectedProfile={selectedProfile}>
-        <RoutineProvider selectedProfile={selectedProfile}>
-          <Router>
+    <Router>
+      <AuthProvider>
+        <DeviceProvider selectedProfile={selectedProfile}>
+          <RoutineProvider selectedProfile={selectedProfile}>
             <div className="bg-gray-50">
               <Toaster position="top-right" />
               <Routes>
@@ -36,13 +43,14 @@ function App() {
                     </ProtectedRoute>
                   }
                 />
-                <Route path="/" element={<Navigate to="/dashboard\" replace />} />
+                <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                <Route path="*" element={<Navigate to="/dashboard" replace />} />
               </Routes>
             </div>
-          </Router>
-        </RoutineProvider>
-      </DeviceProvider>
-    </AuthProvider>
+          </RoutineProvider>
+        </DeviceProvider>
+      </AuthProvider>
+    </Router>
   );
 }
 

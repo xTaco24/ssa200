@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Routine } from '../types/routine';
-import { getStoredRoutines, storeRoutines } from '../lib/storage';
+import { getStoredRoutines, storeRoutines, defaultRoutines } from '../lib/storage';
 import toast from 'react-hot-toast';
 
 interface RoutineContextType {
@@ -9,6 +9,7 @@ interface RoutineContextType {
   updateRoutine: (id: number, updates: Partial<Routine>) => void;
   removeRoutine: (id: number) => void;
   toggleRoutine: (id: number) => void;
+  resetRoutines: () => void;
   selectedProfile: string;
 }
 
@@ -16,47 +17,96 @@ const RoutineContext = createContext<RoutineContextType | undefined>(undefined);
 
 export function RoutineProvider({ children, selectedProfile }: { children: React.ReactNode; selectedProfile: string }) {
   const [routines, setRoutines] = useState<Routine[]>([]);
+  const [originalRoutines, setOriginalRoutines] = useState<Routine[]>([]);
 
   useEffect(() => {
-    const storedRoutines = getStoredRoutines(selectedProfile);
-    setRoutines(storedRoutines);
+    try {
+      const storedRoutines = getStoredRoutines(selectedProfile);
+      if (storedRoutines.length === 0) {
+        const profileDefaults = defaultRoutines[selectedProfile as keyof typeof defaultRoutines] || [];
+        setRoutines(profileDefaults);
+        setOriginalRoutines(JSON.parse(JSON.stringify(profileDefaults)));
+        storeRoutines(selectedProfile, profileDefaults);
+      } else {
+        setRoutines(storedRoutines);
+        setOriginalRoutines(JSON.parse(JSON.stringify(storedRoutines)));
+      }
+    } catch (error) {
+      console.error('Error loading routines:', error);
+      toast.error('Error al cargar las rutinas');
+    }
   }, [selectedProfile]);
 
   useEffect(() => {
-    storeRoutines(selectedProfile, routines);
+    try {
+      storeRoutines(selectedProfile, routines);
+    } catch (error) {
+      console.error('Error saving routines:', error);
+      toast.error('Error al guardar las rutinas');
+    }
   }, [routines, selectedProfile]);
 
   const addRoutine = (routine: Omit<Routine, 'id'>) => {
-    const newRoutine = {
-      ...routine,
-      id: Date.now(),
-    };
-    setRoutines(prev => [...prev, newRoutine]);
-    toast.success('Rutina creada correctamente');
+    try {
+      const newRoutine = {
+        ...routine,
+        id: Date.now(),
+      };
+      setRoutines(prev => [...prev, newRoutine]);
+      toast.success('Rutina creada correctamente');
+    } catch (error) {
+      console.error('Error adding routine:', error);
+      toast.error('Error al crear la rutina');
+    }
   };
 
   const updateRoutine = (id: number, updates: Partial<Routine>) => {
-    setRoutines(prev =>
-      prev.map(routine =>
-        routine.id === id ? { ...routine, ...updates } : routine
-      )
-    );
-    toast.success('Rutina actualizada correctamente');
+    try {
+      setRoutines(prev =>
+        prev.map(routine =>
+          routine.id === id ? { ...routine, ...updates } : routine
+        )
+      );
+      toast.success('Rutina actualizada correctamente');
+    } catch (error) {
+      console.error('Error updating routine:', error);
+      toast.error('Error al actualizar la rutina');
+    }
   };
 
   const removeRoutine = (id: number) => {
-    setRoutines(prev => prev.filter(routine => routine.id !== id));
-    toast.success('Rutina eliminada correctamente');
+    try {
+      setRoutines(prev => prev.filter(routine => routine.id !== id));
+      toast.success('Rutina eliminada correctamente');
+    } catch (error) {
+      console.error('Error removing routine:', error);
+      toast.error('Error al eliminar la rutina');
+    }
   };
 
   const toggleRoutine = (id: number) => {
-    setRoutines(prev =>
-      prev.map(routine =>
-        routine.id === id
-          ? { ...routine, active: !routine.active }
-          : routine
-      )
-    );
+    try {
+      setRoutines(prev =>
+        prev.map(routine =>
+          routine.id === id
+            ? { ...routine, active: !routine.active }
+            : routine
+        )
+      );
+    } catch (error) {
+      console.error('Error toggling routine:', error);
+      toast.error('Error al cambiar el estado de la rutina');
+    }
+  };
+
+  const resetRoutines = () => {
+    try {
+      setRoutines(JSON.parse(JSON.stringify(originalRoutines)));
+      toast.success('Rutinas restauradas a valores predeterminados');
+    } catch (error) {
+      console.error('Error resetting routines:', error);
+      toast.error('Error al restaurar las rutinas');
+    }
   };
 
   return (
@@ -67,6 +117,7 @@ export function RoutineProvider({ children, selectedProfile }: { children: React
         updateRoutine,
         removeRoutine,
         toggleRoutine,
+        resetRoutines,
         selectedProfile,
       }}
     >
