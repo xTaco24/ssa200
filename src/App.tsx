@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { RouterProvider, createBrowserRouter, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './contexts/AuthContext';
 import { DeviceProvider } from './contexts/DeviceContext';
@@ -23,40 +23,57 @@ function App() {
     }
   }, []);
 
+  const router = createBrowserRouter([
+    {
+      path: '/login',
+      element: <Login />,
+      errorElement: <ErrorBoundary />
+    },
+    {
+      path: '/register',
+      element: <Register />,
+      errorElement: <ErrorBoundary />
+    },
+    {
+      path: '/forgot-password',
+      element: <ForgotPassword />,
+      errorElement: <ErrorBoundary />
+    },
+    {
+      path: '/dashboard/*',
+      element: (
+        <ProtectedRoute>
+          <Dashboard 
+            selectedProfile={selectedProfile}
+            setSelectedProfile={setSelectedProfile}
+          />
+        </ProtectedRoute>
+      ),
+      errorElement: <ErrorBoundary />
+    },
+    {
+      path: '/',
+      element: <Navigate to="/dashboard" replace />
+    },
+    {
+      path: '*',
+      element: <Navigate to="/dashboard" replace />
+    }
+  ]);
+
   return (
-    <Router>
-      <AuthProvider>
-        <DeviceProvider selectedProfile={selectedProfile}>
-          <RoutineProvider selectedProfile={selectedProfile}>
-            <div className="bg-gray-50">
-              <Toaster position="top-right" />
-              <Suspense fallback={<LoadingSpinner />}>
-                <Routes>
-                  <Route path="/login" element={<Login />} />
-                  <Route path="/register" element={<Register />} />
-                  <Route path="/forgot-password" element={<ForgotPassword />} />
-                  <Route
-                    path="/dashboard/*"
-                    element={
-                      <ProtectedRoute>
-                        <ErrorBoundary>
-                          <Dashboard 
-                            selectedProfile={selectedProfile}
-                            setSelectedProfile={setSelectedProfile}
-                          />
-                        </ErrorBoundary>
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route path="/" element={<Navigate to="/dashboard\" replace />} />
-                  <Route path="*" element={<Navigate to="/dashboard\" replace />} />
-                </Routes>
-              </Suspense>
-            </div>
-          </RoutineProvider>
-        </DeviceProvider>
-      </AuthProvider>
-    </Router>
+    <AuthProvider>
+      <DeviceProvider selectedProfile={selectedProfile}>
+        <RoutineProvider selectedProfile={selectedProfile}>
+          <div className="bg-gray-50">
+            <Toaster position="top-right" />
+            <Suspense fallback={<LoadingSpinner />}>
+              <RouterProvider router={router} />
+            </Suspense>
+          </div>
+        </RoutineProvider>
+      </DeviceProvider>
+    </AuthProvider>
   );
 }
 
